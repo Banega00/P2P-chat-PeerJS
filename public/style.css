@@ -56,6 +56,19 @@
     margin-left: 10px;
     overflow: auto;
     border-radius: 0 5vh 0 0;
+    padding: 3vh;
+}
+
+.message{
+    background-color: #4ea6cf;
+    display: inline-block;
+    padding: 0.5rem 2rem;
+    border-radius: 9999px;
+}
+
+.message__title{
+    color: gray;
+    font-size: 0.8rem;
 }
 
 .send-messages-div__inner{
@@ -87,5 +100,9 @@
     height: 100%;
     filter: invert(100%) sepia(0%) saturate(7421%) hue-rotate(154deg) brightness(120%) contrast(98%);
 
+
+}
+
+.message{
 
 }

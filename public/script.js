@@ -1,4 +1,7 @@
 const onlineUsersDiv = document.querySelector('.online-users-div')
+const messagesDiv = document.querySelector('.messages-div')
+const sendMessageInput = document.querySelector('#send-message-input')
+
 function addNewPeerToOnlinePeers(peerId) {
     const newPeerElement = document.createElement('div')
     newPeerElement.classList.add('online-user')
@@ -16,12 +19,8 @@ const myPeer = new Peer(undefined, {
     port: '12345'
 })
 
-
-
 myPeer.on('open', id => {
-    const socket = io('ws://192.168.1.10:3000', {
-        transports: ["websocket"]
-    })
+    const socket = io('http://192.168.1.10:3000')
 
     PEER_ID = id;
     document.getElementById('peer-id').innerHTML = `Your peer id is: <b>${id}</b>`
@@ -48,7 +47,7 @@ function connectToNewPeer(peerId) {
 
         connection.on('data', data => {
 
-            console.log('DATA:', data)
+            receiveMessage(peerId, data)
         })
     });
 
@@ -58,6 +57,29 @@ function connectToNewPeer(peerId) {
     })
 
     peers[peerId] = connection;
+}
+
+function sendMessage(){
+    const message = sendMessageInput.value
+    if(!message) return;
+
+    for(const peerId in peers){
+        peers[peerId].send(message)
+    }
+    receiveMessage(PEER_ID, message)
+    sendMessageInput.value=""
+}
+
+function receiveMessage(peerId, message){
+    const div = document.createElement('div')
+    div.classList.add('message')
+    div.setAttribute('data-peerid',peerId)
+    div.innerHTML =
+    `
+        <div class="message__title">${peerId}</div>
+        <div class="message__content">${message}</div>
+    `
+    messagesDiv.appendChild(div);
 }
 
 function removePeerFromOnlinePeers(peerId) {
@@ -78,7 +100,7 @@ myPeer.on('connection', function (connection) {
     console.log(`Connection established: ${connection.connectionId}`)
     addNewPeerToOnlinePeers(connection.peer)
     connection.on('data', function (data) {
-        console.log('Message received:', data);
+        receiveMessage(connection.peer, data)
     });
     peers[connection.peer] = connection
 });
