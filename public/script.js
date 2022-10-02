@@ -35,7 +35,8 @@ myPeer.on('open', id => {
     socket.on('peer-disconnected', peerId => {
         removePeerFromOnlinePeers(peerId)
     })
-
+ 
+    
 })
 
 function connectToNewPeer(peerId) {
@@ -102,7 +103,7 @@ myPeer.on('connection', function (connection) {
     connection.on('data', function (data) {
         receiveMessage(connection.peer, data)
     });
-    peers[connection.peer] = connection
+    peers[connection.peer] = connection;
 });
 
 
