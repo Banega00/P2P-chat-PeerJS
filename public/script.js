@@ -1,3 +1,11 @@
+const onlineUsersDiv = document.querySelector('.online-users-div')
+function addNewPeerToOnlinePeers(peerId){
+    const newPeerElement = document.createElement('div')
+    newPeerElement.classList.add('online-user')
+
+}
+
+
 const socket = io('http://192.168.1.10:3000')
 const myPeer = new Peer(undefined, {
     host: '/',
