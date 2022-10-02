@@ -5,15 +5,16 @@ const io = require('socket.io')(server)
 
 app.use(express.static('public'))
 
+
 io.on('connection', socket => {
   socket.on('new-peer', (peerId) => {
-
     console.log(`New peer connected: ${peerId}`)
 
     socket.broadcast.emit('new-peer', peerId)
 
     socket.on('disconnect', () => {
-      socket.broadcast.emit('user-disconnected', peerId)
+        console.log('Peer disconnected:', peerId);
+        socket.broadcast.emit('peer-disconnected', peerId)
     })
   })
 })

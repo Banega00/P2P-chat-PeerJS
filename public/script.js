@@ -1,42 +1,50 @@
 const onlineUsersDiv = document.querySelector('.online-users-div')
-function addNewPeerToOnlinePeers(peerId){
+function addNewPeerToOnlinePeers(peerId) {
     const newPeerElement = document.createElement('div')
     newPeerElement.classList.add('online-user')
-
+    newPeerElement.setAttribute('data-peerid', peerId)
+    newPeerElement.innerHTML = peerId
+    onlineUsersDiv.appendChild(newPeerElement)
 }
 
+let PEER_ID;
 
-const socket = io('http://192.168.1.10:3000')
+const peers = {}
+
 const myPeer = new Peer(undefined, {
     host: '/',
     port: '12345'
 })
 
-const peers = {}
 
-const peersContainer = document.querySelector('.peers-container')
 
 myPeer.on('open', id => {
+    const socket = io('ws://192.168.1.10:3000', {
+        transports: ["websocket"]
+    })
+
+    PEER_ID = id;
+    document.getElementById('peer-id').innerHTML = `Your peer id is: <b>${id}</b>`
     socket.emit('new-peer', id)
-})
 
-socket.on('new-peer', peerId => {
-    connectToNewPeer(peerId)
-})
+    socket.on('new-peer', peerId => {
 
-function addPeerIdToPage(peerId) {
-    const p = document.createElement('p')
-    p.innerHTML = peerId;
-    peersContainer.appendChild(p);
-}
+        addNewPeerToOnlinePeers(peerId)
+        connectToNewPeer(peerId)
+    })
+
+    socket.on('peer-disconnected', peerId => {
+        removePeerFromOnlinePeers(peerId)
+    })
+
+})
 
 function connectToNewPeer(peerId) {
+
     const connection = myPeer.connect(peerId);
 
     connection.on('open', function () {
         console.log('Connection id:', connection.connectionId)
-
-        addPeerIdToPage(`${peerId} | ${connection.connectionId}`)
 
         connection.on('data', data => {
 
@@ -44,19 +52,37 @@ function connectToNewPeer(peerId) {
         })
     });
 
-    conn.on('close', () => {
+    connection.on('close', () => {
+        removePeerFromOnlinePeers(connection.peer)
         console.log('connection closed')
     })
 
-    peers[peerId] = conn;
+    peers[peerId] = connection;
+}
+
+function removePeerFromOnlinePeers(peerId) {
+    console.log('peer disconnected', peerId)
+    if (peers[peerId]) {
+        peers[peerId].close();
+        delete peers[peerId]
+    }
+
+    const cssQuery = `.online-user[data-peerid="${peerId}"  ]`;
+    console.log(cssQuery)
+    const element = onlineUsersDiv.querySelector(cssQuery)
+    console.log(element);
+    element.remove()
 }
 
 myPeer.on('connection', function (connection) {
-    addPeerIdToPage(`${connection.peer} | ${connection.connectionId}`)
     console.log(`Connection established: ${connection.connectionId}`)
+    addNewPeerToOnlinePeers(connection.peer)
     connection.on('data', function (data) {
         console.log('Message received:', data);
     });
+    peers[connection.peer] = connection
 });
+
+
 
 
